@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ContactForm from './ContactForm/ContactForm';
-import ContactList from './ContactList/ContactList';
-import Filter from './Filter/Filter';
-
+import ContactForm from '../components/ContactForm/ContactForm';
+import ContactList from '../components/ContactList/ContactList';
+import Filter from '../components/Filter/Filter';
+import { fetchContacts, deleteContact } from '../components/redux/store';
 import styles from './ContactForm/ContactForm.module.css';
-
-import { addContact } from '../components/redux/store';
 
 const App = () => {
   const contacts = useSelector(state => state.contacts);
@@ -14,19 +12,20 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const storedContacts = JSON.parse(localStorage.getItem('contacts'));
-    if (storedContacts && storedContacts.length > 0) {
-      dispatch(addContact(storedContacts));
-    }
+    dispatch(fetchContacts());
   }, [dispatch]);
-
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(filter.toLowerCase())
   );
+
+  const handleDeleteContact = async contactId => {
+    try {
+      await dispatch(deleteContact(contactId)); // Wait for the contact to be deleted
+    } catch (error) {
+      // Handle error if needed
+    }
+  };
 
   return (
     <div className={`${styles.container} container`}>
@@ -34,7 +33,10 @@ const App = () => {
       <ContactForm />
       <h2>Contacts</h2>
       <Filter />
-      <ContactList contacts={filteredContacts} />
+      <ContactList
+        contacts={filteredContacts}
+        onDeleteContact={handleDeleteContact} // Pass the delete function as a prop
+      />
     </div>
   );
 };

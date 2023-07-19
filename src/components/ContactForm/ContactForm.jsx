@@ -1,9 +1,6 @@
-// src/components/ContactForm.js
-
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { addContact } from '../redux/store';
-import { nanoid } from 'nanoid';
 
 import styles from './ContactForm.module.css';
 
@@ -11,20 +8,24 @@ const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const contacts = useSelector(state => state.contacts);
   const dispatch = useDispatch();
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
-    const existingContact = contacts.find(contact => contact.name === name);
+    if (name.trim() === '' || number.trim() === '') {
+      setErrorMessage('Please provide both name and number.');
+      return;
+    }
 
-    if (existingContact) {
-      setErrorMessage(`${existingContact.name} is already in contacts!`);
-    } else {
-      dispatch(addContact({ id: nanoid(), name, number }));
+    const contact = { name, number };
+
+    try {
+      await dispatch(addContact(contact)); // Wait for the contact to be added
       setName('');
       setNumber('');
+    } catch (error) {
+      setErrorMessage('Error adding contact. Please try again later.');
     }
   };
 
