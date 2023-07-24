@@ -1,8 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { deleteContact } from '../redux/store';
+import { deleteContact } from '../store'; // Poprawiona ścieżka
 import styles from './ContactList.module.css';
-
 const ContactList = ({ contacts }) => {
   const dispatch = useDispatch();
 

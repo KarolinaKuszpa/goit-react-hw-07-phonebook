@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getContacts, createContact } from '../Api';
+import { getContacts, createContact } from '../components/Api';
 
 const initialState = [];
 
