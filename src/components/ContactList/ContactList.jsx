@@ -1,30 +1,26 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { removeContactAsync } from '../redux/store';
+import { useDispatch } from 'react-redux';
+import { deleteContact } from '../redux/store';
 import styles from './ContactList.module.css';
 
-const ContactList = () => {
-  const contacts = useSelector(state => state.contacts);
-  const filter = useSelector(state => state.filter);
+const ContactList = ({ contacts }) => {
   const dispatch = useDispatch();
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const handleDeleteContact = contactId => {
-    dispatch(removeContactAsync(contactId));
+  const handleDeleteContact = async contactId => {
+    try {
+      await dispatch(deleteContact(contactId));
+    } catch (error) {}
   };
 
   return (
     <ul className={styles.list}>
-      {filteredContacts.map(contact => (
+      {contacts.map(contact => (
         <li key={contact.id} className={styles.item}>
-          {contact.name}: {contact.number}
+          <span>{contact.name}:</span> {contact.number}
           <button
+            type="button"
             className={styles.button}
             onClick={() => handleDeleteContact(contact.id)}
-            type="button"
           >
             Usuń
           </button>
