@@ -1,76 +1,88 @@
-import {
-  configureStore,
-  createSlice,
-  createAsyncThunk,
-} from '@reduxjs/toolkit';
-import { getContacts, createContact } from '../Api';
+import { configureStore, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-const initialState = [];
+const API_BASE_URL =
+  'https://64b8205821b9aa6eb0799603.mockapi.io/contacts/contacts';
 
-// Definiujemy akcje asynchroniczne za pomocą funkcji createAsyncThunk
-export const fetchContacts = createAsyncThunk(
-  'contacts/fetchContacts',
-  async () => {
-    const contacts = await getContacts();
-    return contacts;
-  }
-);
-
-export const addContact = createAsyncThunk(
-  'contacts/addContact',
-  async contact => {
-    const newContact = await createContact(contact);
-    return newContact;
-  }
-);
-
-// Definiujemy slicer reducera
-const contactsSlice = createSlice({
-  name: 'contacts',
-  initialState,
-  reducers: {
-    // Możemy zdefiniować dodatkowe akcje synchroniczne tutaj, jeśli są potrzebne
-    // Na przykład akcje do aktualizacji kontaktu, czy czyszczenia listy kontaktów
-  },
-  extraReducers: builder => {
-    // Obsługujemy rezultat akcji asynchronicznych
-    builder
-      .addCase(fetchContacts.fulfilled, (state, action) => {
-        return action.payload; // Set the contacts from the backend response
-      })
-      .addCase(addContact.fulfilled, (state, action) => {
-        state.push(action.payload); // Add the newly created contact to the state
-      })
-      .addCase(fetchContacts.pending, state => {
-        // Handle loading state if needed
-      })
-      .addCase(addContact.pending, state => {
-        // Handle loading state if needed
-      })
-      .addCase(fetchContacts.rejected, (state, action) => {
-        // Handle error state if needed
-      })
-      .addCase(addContact.rejected, (state, action) => {
-        // Handle error state if needed
-      });
-  },
+const contactsAPI = axios.create({
+  baseURL: API_BASE_URL,
 });
 
-// Eksportujemy akcje synchroniczne z slicera reducera
-export const { _ } = contactsSlice.actions;
-
-// Definiujemy pozostałe slicy reducera, jeśli są potrzebne
-// Na przykład slicy do zarządzania filtrowaniem, usuwaniem kontaktów, itp.
-
-// Kombinujemy slicy reducera w główny reducer
-const rootReducer = {
-  contacts: contactsSlice.reducer,
-  // Dodajemy inne slicy reducera tutaj, jeśli są potrzebne
+export const getContacts = async () => {
+  const response = await contactsAPI.get('/');
+  return response.data;
 };
 
-// Konfigurujemy i eksportujemy store
+export const createContact = async contact => {
+  const response = await contactsAPI.post('/', contact);
+  return response.data;
+};
+
+export const updateContact = async (id, contact) => {
+  const response = await contactsAPI.put(`/${id}`, contact);
+  return response.data;
+};
+
+export const deleteContact = async id => {
+  await contactsAPI.delete(`/${id}`);
+};
+
+const contactsAPI = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+export const fetchContactsAsync = createAsyncThunk(
+  'contacts/fetchContacts',
+  async () => {
+    const response = await contactsAPI.get('/contacts');
+    return response.data;
+  }
+);
+
+export const addContactAsync = createAsyncThunk(
+  'contacts/addContact',
+  async contact => {
+    const response = await contactsAPI.post('/contacts', contact);
+    return response.data;
+  }
+);
+
+export const removeContactAsync = createAsyncThunk(
+  'contacts/removeContact',
+  async contactId => {
+    await contactsAPI.delete(`/contacts/${contactId}`);
+    return contactId;
+  }
+);
+
+const initialState = {
+  contacts: [],
+  filter: '',
+};
+
 const store = configureStore({
-  reducer: rootReducer,
+  reducer: {
+    contacts: (state = initialState.contacts, action) => {
+      switch (action.type) {
+        case fetchContactsAsync.fulfilled.type:
+          return action.payload;
+        case addContactAsync.fulfilled.type:
+          return [...state, action.payload];
+        case removeContactAsync.fulfilled.type:
+          return state.filter(contact => contact.id !== action.payload);
+        default:
+          return state;
+      }
+    },
+    filter: (state = initialState.filter, action) => {
+      switch (action.type) {
+        case 'SET_FILTER':
+          return action.payload;
+        default:
+          return state;
+      }
+    },
+  },
 });
 
 export default store;
