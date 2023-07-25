@@ -1,14 +1,17 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { deleteContact } from '../store'; // Poprawiona ścieżka
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteContact } from '../redux/store';
 import styles from './ContactList.module.css';
+
 const ContactList = ({ contacts }) => {
   const dispatch = useDispatch();
 
   const handleDeleteContact = async contactId => {
     try {
       await dispatch(deleteContact(contactId));
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

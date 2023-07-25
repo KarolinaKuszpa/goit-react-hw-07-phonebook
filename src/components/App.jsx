@@ -1,10 +1,9 @@
-// src/components/App.jsx
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchContacts, addContact, setFilter } from '../redux/store';
 import ContactForm from './ContactForm/ContactForm';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
-import { fetchContacts, addContact, deleteContact, setFilter } from '../store'; // Poprawiona ścieżka
 import styles from './App.module.css';
 
 const App = () => {
