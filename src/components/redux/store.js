@@ -1,4 +1,8 @@
-import { configureStore, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  configureStore,
+  createAsyncThunk,
+} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_BASE_URL =
@@ -8,30 +12,7 @@ const contactsAPI = axios.create({
   baseURL: API_BASE_URL,
 });
 
-export const getContacts = async () => {
-  const response = await contactsAPI.get('/');
-  return response.data;
-};
-
-export const createContact = async contact => {
-  const response = await contactsAPI.post('/', contact);
-  return response.data;
-};
-
-export const updateContact = async (id, contact) => {
-  const response = await contactsAPI.put(`/${id}`, contact);
-  return response.data;
-};
-
-export const deleteContact = async id => {
-  await contactsAPI.delete(`/${id}`);
-};
-
-const contactsAPI = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-export const fetchContactsAsync = createAsyncThunk(
+export const fetchContacts = createAsyncThunk(
   'contacts/fetchContacts',
   async () => {
     const response = await contactsAPI.get('/contacts');
@@ -39,7 +20,7 @@ export const fetchContactsAsync = createAsyncThunk(
   }
 );
 
-export const addContactAsync = createAsyncThunk(
+export const addContact = createAsyncThunk(
   'contacts/addContact',
   async contact => {
     const response = await contactsAPI.post('/contacts', contact);
@@ -47,41 +28,58 @@ export const addContactAsync = createAsyncThunk(
   }
 );
 
-export const removeContactAsync = createAsyncThunk(
-  'contacts/removeContact',
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
   async contactId => {
     await contactsAPI.delete(`/contacts/${contactId}`);
     return contactId;
   }
 );
 
-const initialState = {
-  contacts: [],
-  filter: '',
-};
+export const setFilter = createAsyncThunk(
+  'contacts/setFilter',
+  async filter => {
+    // Logika ustawiania filtra, jeśli jest potrzebna
+    // Na przykład, możesz tutaj zaimplementować zapytanie do API, które filtrować dane
+  }
+);
+
+const contactsSlice = createSlice({
+  name: 'contacts',
+  initialState: {
+    items: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: builder => {
+    builder
+      .addCase(fetchContacts.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchContacts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+      })
+      .addCase(fetchContacts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+      })
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.items = state.items.filter(
+          contact => contact.id !== action.payload
+        );
+      });
+  },
+});
 
 const store = configureStore({
   reducer: {
-    contacts: (state = initialState.contacts, action) => {
-      switch (action.type) {
-        case fetchContactsAsync.fulfilled.type:
-          return action.payload;
-        case addContactAsync.fulfilled.type:
-          return [...state, action.payload];
-        case removeContactAsync.fulfilled.type:
-          return state.filter(contact => contact.id !== action.payload);
-        default:
-          return state;
-      }
-    },
-    filter: (state = initialState.filter, action) => {
-      switch (action.type) {
-        case 'SET_FILTER':
-          return action.payload;
-        default:
-          return state;
-      }
-    },
+    contacts: contactsSlice.reducer,
   },
 });
 
