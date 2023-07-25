@@ -10,7 +10,6 @@ import {
 import ContactForm from './ContactForm/ContactForm';
 import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
-import styles from './ContactForm/ContactForm.module.css';
 
 const App = () => {
   const contacts = useSelector(state => state.contacts.items);
@@ -22,7 +21,7 @@ const App = () => {
   }, [dispatch]);
 
   const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
+    filter ? contact.name.toLowerCase().includes(filter.toLowerCase()) : true
   );
 
   const handleAddContact = async contact => {
@@ -38,7 +37,7 @@ const App = () => {
   };
 
   return (
-    <div className={`${styles.container} container`}>
+    <div className={`container`}>
       <h1>Książka telefoniczna</h1>
       <ContactForm onAddContact={handleAddContact} />
       <h2>Kontakty</h2>

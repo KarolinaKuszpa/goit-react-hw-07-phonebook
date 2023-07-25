@@ -3,7 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deleteContact } from '../redux/store';
 import styles from './ContactList.module.css';
 
-const ContactList = ({ contacts }) => {
+const ContactList = () => {
+  const contacts = useSelector(state => state.contacts.items);
   const dispatch = useDispatch();
 
   const handleDeleteContact = async contactId => {

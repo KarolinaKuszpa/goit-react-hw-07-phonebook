@@ -7,13 +7,6 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://64b8205821b9aa6eb0799603.mockapi.io/contacts';
 
-const initialState = {
-  contacts: [],
-  filter: '',
-  status: 'idle',
-  error: null,
-};
-
 const contactsAPI = axios.create({
   baseURL: API_BASE_URL,
 });
@@ -45,8 +38,11 @@ export const deleteContact = createAsyncThunk(
 export const setFilter = createAsyncThunk(
   'contacts/setFilter',
   async filter => {
-    // Logika ustawiania filtra, jeśli jest potrzebna
-    // Na przykład, możesz tutaj zaimplementować zapytanie do API, które filtrować dane
+    const response = await contactsAPI.get('/contacts');
+    const filteredContacts = response.data.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+    return filteredContacts;
   }
 );
 
@@ -56,6 +52,7 @@ const contactsSlice = createSlice({
     items: [],
     loading: false,
     error: null,
+    filter: '',
   },
   reducers: {},
   extraReducers: builder => {
@@ -79,6 +76,19 @@ const contactsSlice = createSlice({
         state.items = state.items.filter(
           contact => contact.id !== action.payload
         );
+      })
+      .addCase(setFilter.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(setFilter.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+        state.filter = action.meta.arg;
+      })
+      .addCase(setFilter.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
       });
   },
 });

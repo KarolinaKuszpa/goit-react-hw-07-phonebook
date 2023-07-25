@@ -4,25 +4,23 @@ import { setFilter } from '../redux/store';
 import styles from './Filter.module.css';
 
 const Filter = () => {
-  const filterValue = useSelector(state => state.filter);
+  const filter = useSelector(state => state.contacts.filter);
   const dispatch = useDispatch();
 
-  const handleFilterChange = e => {
-    dispatch(setFilter(e.target.value));
+  const handleFilterChange = event => {
+    dispatch(setFilter(event.target.value));
   };
 
   return (
-    <div>
-      <label>
-        Znajdź kontakty według nazwy:
-        <input
-          className={styles.input}
-          type="text"
-          value={filterValue}
-          onChange={handleFilterChange}
-        />
-      </label>
-    </div>
+    <label className={styles.label}>
+      Filtruj kontakty:
+      <input
+        className={styles.input}
+        type="text"
+        value={filter}
+        onChange={handleFilterChange}
+      />
+    </label>
   );
 };
 
